@@ -17,19 +17,46 @@ using namespace std;
 void SwActive::UpdateActiveStatus(const std::vector<DownloadStatus>& v)
 {
     for (auto& a : v) {
-        log_message("Fc");
     }
+}
+
+int downloadEventCallback(aria2::Session* session, aria2::DownloadEvent event,
+    aria2::A2Gid gid, void* userData)
+{
+    SwActive* sa = static_cast<SwActive*>(userData);
+
+    switch (event) {
+    case aria2::EVENT_ON_DOWNLOAD_COMPLETE:
+        initial_data[index][4] = initial_data[index][2];
+        //sa->drawDynamicItems();
+        //log_message("COMPLETE");
+        break;
+    case aria2::EVENT_ON_DOWNLOAD_ERROR:
+        //log_message("ERROR");
+        break;
+    default:
+        return 0;
+    }
+    return 0;
 }
 
 int downloaderJob(JobQueue& jobq, NotifyQueue& notifyq, SwActive* form)
 {
     // session is actually singleton: 1 session per process
     aria2::Session* session;
+
     // Use default configuration
     aria2::SessionConfig config;
+
+    config.downloadEventCallback = downloadEventCallback;
     config.keepRunning = true;
+
     session = aria2::sessionNew(aria2::KeyVals(), config);
     auto start = std::chrono::steady_clock::now();
+    int previous_downloaded_data = 0;
+    bool is_first = true;
+    float rate_factor = 1.0;
+
     for (;;) {
         int rv = aria2::run(session, aria2::RUN_ONCE);
         if (rv != 1) {
@@ -42,6 +69,7 @@ int downloaderJob(JobQueue& jobq, NotifyQueue& notifyq, SwActive* form)
             std::unique_ptr<Job> job = jobq.pop();
             job->execute(session);
         }
+
         if (count >= 900) {
             start = now;
             std::vector<aria2::A2Gid> gids = aria2::getActiveDownload(session);
@@ -49,6 +77,8 @@ int downloaderJob(JobQueue& jobq, NotifyQueue& notifyq, SwActive* form)
             for (auto gid : gids) {
                 aria2::DownloadHandle* dh = aria2::getDownloadHandle(session, gid);
                 if (dh) {
+                    config.userData = dynamic_cast<void*>(form);
+
                     DownloadStatus st;
                     st.gid = gid;
                     st.totalLength = dh->getTotalLength();
@@ -59,13 +89,26 @@ int downloaderJob(JobQueue& jobq, NotifyQueue& notifyq, SwActive* form)
                         aria2::FileData file = dh->getFile(1);
                         st.filename = file.path;
                     }
-                    log_message("Yc");
 
-                    initial_data[index][2] = std::to_string(dh->getTotalLength() / (1024 * 1024));
+                    if (initial_data[index][2] == "0") {
+                        initial_data[index][2] = std::to_string(dh->getTotalLength() / (1024 * 1024));
+                    }
+
                     initial_data[index][3] = std::to_string(dh->getDownloadSpeed() / 1024);
-                    initial_data[index][4] = std::to_string(dh->getCompletedLength() / (1024 * 1024));
-                    form->drawDynamicItems();
 
+                    if (is_first) {
+                        previous_downloaded_data = std::stoi(initial_data[index][4]);
+                        if (std::stoi(initial_data[index][2]) != 0) {
+                            int reminded = (std::stoi(initial_data[index][2])) - previous_downloaded_data;
+                            rate_factor = (float)reminded / (float)(std::stoi(initial_data[index][2]));
+                        }
+                        is_first = false;
+                    }
+
+                    initial_data[index][4] = std::to_string(previous_downloaded_data
+                        + (int)(rate_factor * (dh->getCompletedLength() / (1024 * 1024))));
+
+                    form->drawDynamicItems();
                     v.push_back(std::move(st));
                     aria2::deleteDownloadHandle(dh);
                 }
@@ -75,17 +118,12 @@ int downloaderJob(JobQueue& jobq, NotifyQueue& notifyq, SwActive* form)
                 new DownloadStatusNotification(std::move(v))));
         }
     }
+
     int rv = aria2::sessionFinal(session);
     // Report back to the UI thread that this thread is going to
     // exit. This is needed when user pressed ctrl-C in the terminal.
     notifyq.push(std::unique_ptr<Notification>(new ShutdownNotification()));
     return rv;
-}
-
-void fff(SwActive* form)
-{
-    form->drawDynamicItems();
-    log_message("yyy");
 }
 
 SwActive::SwActive(std::shared_ptr<Launcher> launcher)
@@ -356,6 +394,7 @@ void SwActive::spawn_new_download(int m_current_char)
     std::string downloads_path = home + string(user_name) + downloads_directory;
 
     options.push_back(std::pair<std::string, std::string>("dir", downloads_path));
+    //options.push_back(std::pair<std::string, std::string>("continue", "true"));
 
     jobq_.push(std::unique_ptr<Job>(
         new AddUriJob(std::move(uris), std::move(options))));

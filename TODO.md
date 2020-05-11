@@ -14,12 +14,15 @@
 - [x] If you download a file and it completed, you shouldn't download it again.
 - [x] Some files has special charachter like %20 and won't show in list.
 - [x] Set default download directory to: ~/Downloads
+- [ ] Ability to pause/resume downloads.
 - [ ] Currently if you download multiple files, only last file will get updated status.
+- [ ] If you resume a file, it shouldn't start from zero, it should update current downloaded value.
 - [ ] In Download-Page, If you go to end of the page, it won't load data properly.
 
 ### Enhancements
 - [ ] Colorize items in list.(Deleted items: RED, completed items: blue,...)
 - [ ] Notify: when usres enter empty link in New-Page.
+- [ ] In New-Page with pressing enter, the input should be accepted.
 
 ### New Features
 - [ ] Remove items from download list.(Users can decide whether only item will delete or item + fill will delete together)
