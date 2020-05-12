@@ -21,7 +21,7 @@ int downloadEventCallback(aria2::Session* session, aria2::DownloadEvent event,
 
     switch (event) {
     case aria2::EVENT_ON_DOWNLOAD_COMPLETE:
-        initial_data[index][4] = initial_data[index][2];
+        //initial_data[index][4] = initial_data[index][2];
         //sa->drawDynamicItems();
         //log_message("COMPLETE");
         break;
@@ -36,7 +36,7 @@ int downloadEventCallback(aria2::Session* session, aria2::DownloadEvent event,
 
 int downloaderJob(SwActive* form,
     std::vector<std::string> uris,
-    aria2::KeyVals options)
+    aria2::KeyVals options, int current_item)
 {
     // session is actually singleton: 1 session per process
     aria2::Session* session;
@@ -71,22 +71,22 @@ int downloaderJob(SwActive* form,
                     config.userData = dynamic_cast<void*>(form);
 
                     std::lock_guard<std::mutex> l(_mutex);
-                    if (initial_data[index][2] == "0") {
-                        initial_data[index][2] = std::to_string(dh->getTotalLength() / (1024 * 1024));
+                    if (initial_data[current_item][2] == "0") {
+                        initial_data[current_item][2] = std::to_string(dh->getTotalLength() / (1024 * 1024));
                     }
 
-                    initial_data[index][3] = std::to_string(dh->getDownloadSpeed() / 1024);
+                    initial_data[current_item][3] = std::to_string(dh->getDownloadSpeed() / 1024);
 
                     if (is_first) {
-                        previous_downloaded_data = std::stoi(initial_data[index][4]);
-                        if (std::stoi(initial_data[index][2]) != 0) {
-                            int reminded = (std::stoi(initial_data[index][2])) - previous_downloaded_data;
-                            rate_factor = (float)reminded / (float)(std::stoi(initial_data[index][2]));
+                        previous_downloaded_data = std::stoi(initial_data[current_item][4]);
+                        if (std::stoi(initial_data[current_item][2]) != 0) {
+                            int reminded = (std::stoi(initial_data[current_item][2])) - previous_downloaded_data;
+                            rate_factor = (float)reminded / (float)(std::stoi(initial_data[current_item][2]));
                         }
                         is_first = false;
                     }
 
-                    initial_data[index][4] = std::to_string(previous_downloaded_data
+                    initial_data[current_item][4] = std::to_string(previous_downloaded_data
                         + (int)(rate_factor * (dh->getCompletedLength() / (1024 * 1024))));
 
                     form->drawDynamicItems();
@@ -355,9 +355,8 @@ void SwActive::drawDynamicItems()
     }
 }
 
-void SwActive::spawn_new_download(int m_current_char)
+void SwActive::spawn_new_download(int current_index)
 {
-    index = m_current_char;
     std::vector<std::string> uris = { initial_data[m_current_char][1] };
     aria2::KeyVals options;
 
@@ -367,7 +366,7 @@ void SwActive::spawn_new_download(int m_current_char)
     std::string downloads_path = home + string(user_name) + downloads_directory;
 
     options.push_back(std::pair<std::string, std::string>("dir", downloads_path));
-    threads.emplace_back(downloaderJob, this, uris, options);
+    threads.emplace_back(downloaderJob, this, uris, options, current_index);
 }
 
 void SwActive::prevent_downloaded_files(int index)
