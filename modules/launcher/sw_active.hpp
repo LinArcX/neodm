@@ -1,7 +1,6 @@
 #ifndef SW_ACTIVE_H
 #define SW_ACTIVE_H
 
-#include <aria2/aria2.h>
 #include <launcher.hpp>
 #include <ncurses.h>
 #include <string>
@@ -9,6 +8,7 @@
 
 class SwActive {
 private:
+    int thread_counts = 0;
     time_t start, end;
     std::vector<std::thread> threads;
     std::shared_ptr<Launcher> _launcher;

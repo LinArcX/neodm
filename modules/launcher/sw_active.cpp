@@ -4,10 +4,12 @@
 #include <chrono>
 #include <cmath>
 #include <curses.h>
+#include <future>
 #include <iostream>
 #include <menu.h>
 #include <mutex>
 #include <panel.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <thread>
 #include <util.hpp>
@@ -36,7 +38,8 @@ int downloadEventCallback(aria2::Session* session, aria2::DownloadEvent event,
 
 int downloaderJob(SwActive* form,
     std::vector<std::string> uris,
-    aria2::KeyVals options, int current_item)
+    aria2::KeyVals options,
+    int current_item)
 {
     // session is actually singleton: 1 session per process
     aria2::Session* session;
@@ -366,7 +369,15 @@ void SwActive::spawn_new_download(int current_index)
     std::string downloads_path = home + string(user_name) + downloads_directory;
 
     options.push_back(std::pair<std::string, std::string>("dir", downloads_path));
-    threads.emplace_back(downloaderJob, this, uris, options, current_index);
+    threads.emplace_back(downloaderJob,
+        this,
+        uris,
+        options,
+        current_index);
+
+    _tm.insert(pair<int, pthread_t>(current_index,
+        threads[thread_counts].native_handle()));
+    thread_counts++;
 }
 
 void SwActive::prevent_downloaded_files(int index)
@@ -378,6 +389,20 @@ void SwActive::prevent_downloaded_files(int index)
         if (percentage != 100) {
             spawn_new_download(index);
         }
+    }
+}
+
+void stop_current_download(int current_index)
+{
+    int p_counter = 0;
+    std::unordered_map<int, pthread_t>::iterator it;
+    it = _tm.find(current_index);
+
+    if (it == _tm.end()) {
+        cout << "Key-value pair not present in map";
+    } else {
+        pthread_cancel(it->second);
+        _tm.erase(it->first);
     }
 }
 
@@ -459,6 +484,9 @@ loop:
         goto loop;
     case 's':
         prevent_downloaded_files(m_current_char);
+        goto loop;
+    case 'p':
+        stop_current_download(m_current_char);
         goto loop;
     case 'n':
         c = 'n';
