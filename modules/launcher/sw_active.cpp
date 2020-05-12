@@ -16,19 +16,39 @@
 
 using namespace std;
 
+void stop_current_download(int current_index)
+{
+    std::unordered_map<int, pthread_t>::iterator it;
+    it = _tm.find(current_index);
+
+    if (it == _tm.end()) {
+        cout << "Key-value pair not present in map";
+    } else {
+        pthread_cancel(it->second);
+        _tm.erase(it->first);
+    }
+}
+
 int downloadEventCallback(aria2::Session* session, aria2::DownloadEvent event,
     aria2::A2Gid gid, void* userData)
 {
-    SwActive* sa = static_cast<SwActive*>(userData);
+    //SwActive* sa = static_cast<SwActive*>(userData);
+    //int current_index = (uintptr_t)(userData);
+    //int current_index = reinterpret_cast<int>(userData);
+    //initial_data[index][4] = initial_data[index][2];
+    //sa->drawDynamicItems();
+
+    long long sig1 = reinterpret_cast<long long>(userData);
+    int current_index = static_cast<int>(sig1);
+    log_message(std::to_string(current_index).c_str());
 
     switch (event) {
     case aria2::EVENT_ON_DOWNLOAD_COMPLETE:
-        //initial_data[index][4] = initial_data[index][2];
-        //sa->drawDynamicItems();
-        //log_message("COMPLETE");
+        log_message("COMPLETE");
+        stop_current_download(current_index);
         break;
     case aria2::EVENT_ON_DOWNLOAD_ERROR:
-        //log_message("ERROR");
+        log_message("ERROR");
         break;
     default:
         return 0;
@@ -45,12 +65,12 @@ int downloaderJob(SwActive* form,
     aria2::Session* session;
     // Use default configuration
     aria2::SessionConfig config;
-
-    config.downloadEventCallback = downloadEventCallback;
-    config.keepRunning = true;
+    //config.keepRunning = true;
 
     session = aria2::sessionNew(aria2::KeyVals(), config);
     aria2::addUri(session, 0, uris, options);
+
+    config.downloadEventCallback = downloadEventCallback;
 
     auto start = std::chrono::steady_clock::now();
     int previous_downloaded_data = 0;
@@ -71,7 +91,10 @@ int downloaderJob(SwActive* form,
             for (auto gid : gids) {
                 aria2::DownloadHandle* dh = aria2::getDownloadHandle(session, gid);
                 if (dh) {
-                    config.userData = dynamic_cast<void*>(form);
+                    //config.userData = static_cast<void*>(current_item);
+                    //config.userData = const_cast<int>(current_item);
+                    //config.userData = reinterpret_cast<void*>(current_item);
+                    config.userData = (void*)(current_item);
 
                     std::lock_guard<std::mutex> l(_mutex);
                     if (initial_data[current_item][2] == "0") {
@@ -389,20 +412,6 @@ void SwActive::prevent_downloaded_files(int index)
         if (percentage != 100) {
             spawn_new_download(index);
         }
-    }
-}
-
-void stop_current_download(int current_index)
-{
-    int p_counter = 0;
-    std::unordered_map<int, pthread_t>::iterator it;
-    it = _tm.find(current_index);
-
-    if (it == _tm.end()) {
-        cout << "Key-value pair not present in map";
-    } else {
-        pthread_cancel(it->second);
-        _tm.erase(it->first);
     }
 }
 
