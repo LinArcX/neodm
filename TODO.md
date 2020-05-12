@@ -15,8 +15,8 @@
 - [x] Some files has special charachter like %20 and won't show in list.
 - [x] Set default download directory to: ~/Downloads
 - [x] Currently if you download multiple files, only last file will get updated status.
-- [ ] Ability to pause/resume downloads.
-- [ ] If you resume a file, it shouldn't start from zero, it should update current downloaded value.
+- [x] Ability to pause/resume downloads.
+- [x] If you resume a file, it shouldn't start from zero, it should update current downloaded value.
 - [ ] In Download-Page, If you go to end of the page, it won't load data properly.
 
 ### Enhancements
