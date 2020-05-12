@@ -18,11 +18,22 @@
 - [x] Ability to pause/resume downloads.
 - [x] If you resume a file, it shouldn't start from zero, it should update current downloaded value.
 - [ ] In Download-Page, If you go to end of the page, it won't load data properly.
+- [ ] If you start a download file and pause it and start it again, completed length won't be update anymore.
+- [ ] Sometimes thread die without any reason.(Mostly in this case: Start/pause/Start...)
+- [ ] If in the middle of downloading files go to another page, it will updating the whole screen. and after come back numbers reset to zero.
+
+### Test
+- [x] Normal download works
+- [x] Pause/exit/resume works.
+- [] Pause/resume works.
+- [] Pause/Go to another page/back/resuem works.
+- [] Start/Go to another page/back works.
 
 ### Enhancements
 - [ ] Colorize items in list.(Deleted items: RED, completed items: blue,...)
 - [ ] Notify: when usres enter empty link in New-Page.
 - [ ] In New-Page with pressing enter, the input should be accepted.
+- [ ] Replace all pop-up windows with seperate windows(Due to constantly update of main window, it'll cluttering whole screen)
 
 ### New Features
 - [ ] Remove items from download list.(Users can decide whether only item will delete or item + fill will delete together)
