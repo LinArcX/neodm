@@ -14,12 +14,6 @@
 
 using namespace std;
 
-void SwActive::UpdateActiveStatus(const std::vector<DownloadStatus>& v)
-{
-    for (auto& a : v) {
-    }
-}
-
 int downloadEventCallback(aria2::Session* session, aria2::DownloadEvent event,
     aria2::A2Gid gid, void* userData)
 {
@@ -40,11 +34,12 @@ int downloadEventCallback(aria2::Session* session, aria2::DownloadEvent event,
     return 0;
 }
 
-int downloaderJob(JobQueue& jobq, NotifyQueue& notifyq, SwActive* form)
+int downloaderJob(SwActive* form,
+    std::vector<std::string> uris,
+    aria2::KeyVals options)
 {
     // session is actually singleton: 1 session per process
     aria2::Session* session;
-
     // Use default configuration
     aria2::SessionConfig config;
 
@@ -52,6 +47,8 @@ int downloaderJob(JobQueue& jobq, NotifyQueue& notifyq, SwActive* form)
     config.keepRunning = true;
 
     session = aria2::sessionNew(aria2::KeyVals(), config);
+    aria2::addUri(session, 0, uris, options);
+
     auto start = std::chrono::steady_clock::now();
     int previous_downloaded_data = 0;
     bool is_first = true;
@@ -65,31 +62,15 @@ int downloaderJob(JobQueue& jobq, NotifyQueue& notifyq, SwActive* form)
         auto now = std::chrono::steady_clock::now();
         auto count = std::chrono::duration_cast<std::chrono::milliseconds>(now - start)
                          .count();
-        while (!jobq.empty()) {
-            std::unique_ptr<Job> job = jobq.pop();
-            job->execute(session);
-        }
-
         if (count >= 900) {
             start = now;
             std::vector<aria2::A2Gid> gids = aria2::getActiveDownload(session);
-            std::vector<DownloadStatus> v;
             for (auto gid : gids) {
                 aria2::DownloadHandle* dh = aria2::getDownloadHandle(session, gid);
                 if (dh) {
                     config.userData = dynamic_cast<void*>(form);
 
-                    DownloadStatus st;
-                    st.gid = gid;
-                    st.totalLength = dh->getTotalLength();
-                    st.completedLength = dh->getCompletedLength();
-                    st.downloadSpeed = dh->getDownloadSpeed();
-                    st.uploadSpeed = dh->getUploadSpeed();
-                    if (dh->getNumFiles() > 0) {
-                        aria2::FileData file = dh->getFile(1);
-                        st.filename = file.path;
-                    }
-
+                    std::lock_guard<std::mutex> l(_mutex);
                     if (initial_data[index][2] == "0") {
                         initial_data[index][2] = std::to_string(dh->getTotalLength() / (1024 * 1024));
                     }
@@ -109,26 +90,17 @@ int downloaderJob(JobQueue& jobq, NotifyQueue& notifyq, SwActive* form)
                         + (int)(rate_factor * (dh->getCompletedLength() / (1024 * 1024))));
 
                     form->drawDynamicItems();
-                    v.push_back(std::move(st));
                     aria2::deleteDownloadHandle(dh);
                 }
             }
-
-            notifyq.push(std::unique_ptr<Notification>(
-                new DownloadStatusNotification(std::move(v))));
         }
     }
-
     int rv = aria2::sessionFinal(session);
-    // Report back to the UI thread that this thread is going to
-    // exit. This is needed when user pressed ctrl-C in the terminal.
-    notifyq.push(std::unique_ptr<Notification>(new ShutdownNotification()));
     return rv;
 }
 
 SwActive::SwActive(std::shared_ptr<Launcher> launcher)
     : _launcher(launcher)
-    , downloaderThread_(downloaderJob, std::ref(jobq_), std::ref(notifyq_), this)
 {
     aria2::libraryInit();
     x_first_col = 0;
@@ -142,8 +114,9 @@ SwActive::SwActive(std::shared_ptr<Launcher> launcher)
 
 SwActive::~SwActive()
 {
-    jobq_.push(std::unique_ptr<Job>(new ShutdownJob(true)));
-    downloaderThread_.join();
+    for (auto& entry : threads)
+        entry.join();
+
     aria2::libraryDeinit();
 }
 
@@ -394,10 +367,7 @@ void SwActive::spawn_new_download(int m_current_char)
     std::string downloads_path = home + string(user_name) + downloads_directory;
 
     options.push_back(std::pair<std::string, std::string>("dir", downloads_path));
-    //options.push_back(std::pair<std::string, std::string>("continue", "true"));
-
-    jobq_.push(std::unique_ptr<Job>(
-        new AddUriJob(std::move(uris), std::move(options))));
+    threads.emplace_back(downloaderJob, this, uris, options);
 }
 
 void SwActive::prevent_downloaded_files(int index)
@@ -424,10 +394,6 @@ int SwActive::show_active_window()
     PAGE_SIZE = initial_data.size() - 1 < (_launcher->get_y_max() - 8)
         ? initial_data.size()
         : _launcher->get_y_max() - 8; // fixed view of 16 line items per "page"
-
-    //werase(_launcher->get_sw_content());
-    //wclrtobot(_launcher->get_sw_content());
-    //initial_data.clear();
 
     wclear(_launcher->get_sw_content());
     _launcher->update_window(_launcher->get_sw_content());
