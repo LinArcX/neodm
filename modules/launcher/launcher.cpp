@@ -6,6 +6,7 @@
 
 #include <sw_about.hpp>
 #include <sw_active.hpp>
+#include <sw_key_bindings.hpp>
 #include <sw_new.hpp>
 #include <util.hpp>
 
@@ -91,6 +92,7 @@ void Launcher::process_input()
     std::shared_ptr<SwAbout> _sw_about = std::make_shared<SwAbout>(shared_from_this());
     std::shared_ptr<SwActive> _sw_active = std::make_shared<SwActive>(shared_from_this());
     std::shared_ptr<SwNew> _sw_new = std::make_shared<SwNew>(shared_from_this());
+    std::shared_ptr<SwKeyBindings> _sw_key_bindings = std::make_shared<SwKeyBindings>(shared_from_this());
 
     int c = 0, is_first = 1;
     static int old = 0;
@@ -114,6 +116,10 @@ chooser:
         old = c;
         c = _sw_active->show_active_window();
         goto chooser;
+    case KEY_F(4):
+        old = c;
+        c = _sw_key_bindings->show_window();
+        goto chooser;
     case 'n':
         _sw_new->show_new_window(sw_content);
         c = old;
@@ -136,16 +142,6 @@ void Launcher::show_footer_subwin(WINDOW* screen)
 {
     sw_footer = subwin(screen, 3, x_max, y_max - 3, 0);
     wborder(sw_footer, 0, 0, 0, 0, 0, 0, 0, 0);
-    mvwprintw(sw_footer, 1, 2, "F1. Help, "
-                               "F2. Downloads, "
-                               "k. Up, "
-                               "j. Down, "
-                               "gg. Top, "
-                               "G. Bottom, "
-                               "n. New Download, "
-                               "s. Start, "
-                               "i. Info, "
-                               "q. Quit");
 }
 
 void Launcher::draw_sub_windows()

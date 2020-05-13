@@ -101,6 +101,7 @@ loop:
     switch (c) {
     case 'n':
     case KEY_F(2):
+    case KEY_F(4):
         nodelay(_launcher->get_sw_content(), FALSE);
         break;
     case 'q':
