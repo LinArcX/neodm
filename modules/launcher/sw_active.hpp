@@ -48,6 +48,3 @@ public:
 };
 
 #endif /* SW_ACTIVE_H */
-
-//int m_current_line = 0; // line number within m_nPageLines of current selection (0 thru (m_nPageSize - 1))
-//const int PAGE_TOP = 0; // first line number on the page of line items

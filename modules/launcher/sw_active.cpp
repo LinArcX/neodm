@@ -424,9 +424,7 @@ void SwActive::prevent_downloaded_files(int index)
 
 int SwActive::show_active_window()
 {
-    int c = 0;
-    int g = 0;
-
+    int c = 0, g = 0;
     wborder(_launcher->get_sw_content(), 0, 0, 0, 0, 0, 0, 0, 0);
     keypad(_launcher->get_sw_content(), TRUE);
 
@@ -508,16 +506,3 @@ loop:
     _launcher->update_window(_launcher->get_sw_content());
     return c;
 }
-
-//m_current_line = PAGE_SIZE - 1;
-//
-//if (m_current_line > PAGE_TOP)
-//    m_current_line--;
-//else
-//    m_current_line = PAGE_TOP;
-//
-//
-//        //if (m_current_line < PAGE_SIZE)
-//    m_current_line++;
-//else
-//    m_current_line = PAGE_SIZE;

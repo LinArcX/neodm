@@ -32,14 +32,14 @@
 ### Enhancements
 - [ ] Colorize items in list.(Deleted items: RED, completed items: blue,...)
 - [ ] Notify: when usres enter empty link in New-Page.
-- [ ] In New-Page with pressing enter, the input should be accepted.
+- [?] In New-Page with pressing enter, the input should be accepted.
 - [ ] Replace all pop-up windows with seperate windows(Due to constantly update of main window, it'll cluttering whole screen)
 
 ### New Features
+- [ ] Create settings page that contain these things: 1. Proxy section 2. Defualt download directory.
 - [ ] Remove items from download list.(Users can decide whether only item will delete or item + fill will delete together)
 - [ ] Allow users to pass options to download items.
 - [ ] New-Page: Specify destination folder.
 - [ ] New-Page: Add Proxy section.
 - [ ] New-Page: Specify Max Download/Upload speed.
 - [ ] New-Page: Specify Max Connectinos.
-- [ ] Create settings page that contain these things: 1. Proxy section 2. Defualt download directory.

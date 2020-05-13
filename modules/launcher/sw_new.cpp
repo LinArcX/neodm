@@ -51,11 +51,18 @@ BEGIN:
     cdkscreen = initCDKScreen(win);
 
     /* Start CDK Colors */
-    entry_link = newCDKEntry(cdkscreen, 5, 2, NULL,
-        "Username: ", A_NORMAL, ' ', vMIXED,
-        _launcher->get_x_max() - 40, 0, _launcher->get_x_max() - 50, TRUE, FALSE);
-    btn_add = newCDKButton(cdkscreen, _launcher->get_x_max() - 20, 2, "Add", add_clicked, TRUE, FALSE);
-    btn_cancel = newCDKButton(cdkscreen, _launcher->get_x_max() - 10, 2, "Cancel", cancel_clicked, TRUE, FALSE);
+    //initCDKColor();
+
+    entry_link = newCDKEntry(cdkscreen, 2, 2, NULL, "Username: ", A_NORMAL, ' ',
+        vMIXED, _launcher->get_x_max() - 20, 0, _launcher->get_x_max() * 2,
+        TRUE, FALSE);
+
+    btn_add = newCDKButton(cdkscreen, 2, 5, "Add",
+        add_clicked, TRUE, FALSE);
+    //setCDKButtonBackgroundColor(btn_add, "red");
+
+    btn_cancel = newCDKButton(cdkscreen, 10, 5,
+        "Cancel", cancel_clicked, TRUE, FALSE);
 
     /* Draw the label */
     drawCDKButton(btn_add, TRUE);
