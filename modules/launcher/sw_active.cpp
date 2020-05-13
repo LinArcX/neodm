@@ -328,8 +328,15 @@ void SwActive::drawDynamicItems()
         }
         for (int i = 0; i < threshold; i++) {
             _launcher->update_window(_launcher->get_sw_content());
-            if (m_current_line == i)
+            if (m_current_row == i)
                 wattron(_launcher->get_sw_content(), A_BOLD | COLOR_PAIR(1));
+
+            ////mvwprintw(_launcher->get_sw_content(), START_Y + i, x_second_col + 3, "%03o", i);
+            //mvwprintw(_launcher->get_sw_content(), START_Y + i, x_third_col + 5, "%03o", i);
+            //mvwprintw(_launcher->get_sw_content(), START_Y + i, x_forth_col + 5, "%03d", i);
+            //mvwprintw(_launcher->get_sw_content(), START_Y + i, x_fifth_col + 5, "%02x", i);
+            //mvwprintw(_launcher->get_sw_content(), START_Y + i, x_sixth_col + 5, "%02x", i);
+            ////mvwprintw(_launcher->get_sw_content(), START_Y + i, x_seventh_col + 5, "%02x", i);
 
             mvwprintw(_launcher->get_sw_content(),
                 START_Y + i,
@@ -375,7 +382,7 @@ void SwActive::drawDynamicItems()
                     "%s",
                     std::to_string(percentage).c_str());
             }
-            if (m_current_line == i)
+            if (m_current_row == i)
                 wattroff(_launcher->get_sw_content(), A_BOLD | COLOR_PAIR(1));
         }
     }
@@ -383,7 +390,7 @@ void SwActive::drawDynamicItems()
 
 void SwActive::spawn_new_download(int current_index)
 {
-    std::vector<std::string> uris = { initial_data[m_current_char][1] };
+    std::vector<std::string> uris = { initial_data[m_current_row][1] };
     aria2::KeyVals options;
 
     std::string home = "/home/";
@@ -424,7 +431,7 @@ int SwActive::show_active_window()
     keypad(_launcher->get_sw_content(), TRUE);
 
     initial_data = _launcher->get_sqlite_util()->get_items();
-    PAGE_SIZE = initial_data.size() - 1 < (_launcher->get_y_max() - 8)
+    PAGE_SIZE = initial_data.size() < (_launcher->get_y_max() - 8)
         ? initial_data.size()
         : _launcher->get_y_max() - 8; // fixed view of 16 line items per "page"
 
@@ -434,39 +441,28 @@ int SwActive::show_active_window()
 
 loop:
     drawDynamicItems();
-
     c = wgetch(_launcher->get_sw_content());
+
     switch (c) {
     case KEY_HOME:
-        m_current_line = PAGE_TOP;
-        m_current_char = FIRST_CHAR;
+        m_current_row = FIRST_ROW;
         goto loop;
     case KEY_END:
-        m_current_line = PAGE_SIZE;
-        m_current_char = initial_data.size() - 1;
+        m_current_row = PAGE_SIZE;
         goto loop;
     case 'k':
     case KEY_UP:
-        if (m_current_line > PAGE_TOP)
-            m_current_line--;
+        if (m_current_row > FIRST_ROW)
+            m_current_row--;
         else
-            m_current_line = PAGE_TOP;
-
-        if (m_current_char > FIRST_CHAR)
-            m_current_char--;
-        else
-            m_current_char = FIRST_CHAR;
+            m_current_row = FIRST_ROW;
         goto loop;
     case 'j':
     case KEY_DOWN:
-        if (m_current_line < PAGE_SIZE)
-            m_current_line++;
+        if (m_current_row < PAGE_SIZE - 1)
+            m_current_row++;
         else
-            m_current_line = PAGE_SIZE;
-        if (m_current_char < initial_data.size() - 1)
-            m_current_char++;
-        else
-            m_current_char = initial_data.size() - 1;
+            m_current_row = PAGE_SIZE - 1;
         goto loop;
     case 'g':
         if (!g) {
@@ -479,23 +475,21 @@ loop:
             wclear(_launcher->get_sw_footer());
             wborder(_launcher->get_sw_footer(), 0, 0, 0, 0, 0, 0, 0, 0);
             _launcher->update_window(_launcher->get_sw_footer());
-            m_current_line = PAGE_TOP;
-            m_current_char = FIRST_CHAR;
+            m_current_row = FIRST_ROW;
             g = 0;
             goto loop;
         }
     case 'G':
-        m_current_line = PAGE_SIZE;
-        m_current_char = initial_data.size() - 1;
+        m_current_row = PAGE_SIZE - 1;
         goto loop;
     case 'i':
-        show_popup(initial_data[m_current_char][0]);
+        show_popup(initial_data[m_current_row][0]);
         goto loop;
     case 's':
-        prevent_downloaded_files(m_current_char);
+        prevent_downloaded_files(m_current_row);
         goto loop;
     case 'p':
-        stop_current_download(m_current_char);
+        stop_current_download(m_current_row);
         goto loop;
     case 'n':
         c = 'n';
@@ -514,3 +508,16 @@ loop:
     _launcher->update_window(_launcher->get_sw_content());
     return c;
 }
+
+//m_current_line = PAGE_SIZE - 1;
+//
+//if (m_current_line > PAGE_TOP)
+//    m_current_line--;
+//else
+//    m_current_line = PAGE_TOP;
+//
+//
+//        //if (m_current_line < PAGE_SIZE)
+//    m_current_line++;
+//else
+//    m_current_line = PAGE_SIZE;

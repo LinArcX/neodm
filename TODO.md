@@ -25,9 +25,9 @@
 ### Test
 - [x] Normal download works
 - [x] Pause/exit/resume works.
-- [] Pause/resume works.
-- [] Pause/Go to another page/back/resuem works.
-- [] Start/Go to another page/back works.
+- [ ] Pause/resume works.
+- [ ] Pause/Go to another page/back/resuem works.
+- [ ] Start/Go to another page/back works.
 
 ### Enhancements
 - [ ] Colorize items in list.(Deleted items: RED, completed items: blue,...)
