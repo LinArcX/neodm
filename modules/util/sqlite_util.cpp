@@ -60,6 +60,36 @@ void SqliteUtil::create_items_table()
     sqlite3_close(db);
 }
 
+void SqliteUtil::create_preferences_table()
+{
+    int rc;
+    sqlite3* db;
+
+    /* Open database */
+    rc = sqlite3_open(this->db_path.c_str(), &db);
+
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+    } else {
+        fprintf(stdout, "Opened database successfully\n");
+        char* errMsg = 0;
+        std::string cts_preferences = "CREATE TABLE preferences("
+                                      "ID   INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                      "location              TEXT NOT NULL,"
+                                      "host             INTEGER NOT NULL,"
+                                      "port            INTEGER NOT NULL);";
+
+        rc = sqlite3_exec(db, cts_preferences.c_str(), 0, 0, &errMsg);
+        if (rc != SQLITE_OK) {
+            fprintf(stderr, "SQL Table creation error: %s\n", errMsg);
+            sqlite3_free(errMsg);
+        } else {
+            fprintf(stdout, "Table created successfully\n");
+        }
+    }
+    sqlite3_close(db);
+}
+
 vector<vector<string>> SqliteUtil::get_items()
 {
     int rc;

@@ -14,7 +14,10 @@ public:
     virtual ~SqliteUtil();
 
     int open_db(std::string db_path);
+
     void create_items_table();
+    void create_preferences_table();
+
     std::vector<std::vector<std::string>> get_items();
     void insert_link(std::string link);
     void update_items(std::vector<std::vector<std::string>> latest_data);

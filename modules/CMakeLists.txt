@@ -30,6 +30,8 @@ add_library(
     launcher/sw_new.hpp
     launcher/sw_key_bindings.cpp
     launcher/sw_key_bindings.hpp
+    launcher/sw_preferences.cpp
+    launcher/sw_preferences.hpp
     launcher/extern.hpp
     launcher/extern.cpp)
 target_include_directories(launcher PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/launcher")

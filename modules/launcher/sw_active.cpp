@@ -498,6 +498,9 @@ loop:
     case KEY_F(4):
         c = KEY_F(4);
         break;
+    case KEY_F(5):
+        c = KEY_F(5);
+        break;
     case 'q':
         _launcher->get_sqlite_util()->update_items(initial_data);
         endwin();

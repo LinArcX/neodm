@@ -28,6 +28,7 @@ void SwNew::clean_up()
 {
     /* Clean up */
     destroyCDKButton(btn_add);
+    destroyCDKButton(btn_cancel);
     destroyCDKEntry(entry_link);
     destroyCDKScreen(cdkscreen);
     endCDK();

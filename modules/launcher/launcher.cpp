@@ -8,6 +8,7 @@
 #include <sw_active.hpp>
 #include <sw_key_bindings.hpp>
 #include <sw_new.hpp>
+#include <sw_preferences.hpp>
 #include <util.hpp>
 
 using namespace std;
@@ -35,6 +36,7 @@ Launcher::Launcher()
     int db_status = _sqlite_util->open_db(db_full_path);
     if (db_status) {
         _sqlite_util->create_items_table();
+        _sqlite_util->create_preferences_table();
     } else {
         delwin(sw_content);
         delwin(sw_footer);
@@ -93,6 +95,7 @@ void Launcher::process_input()
     std::shared_ptr<SwActive> _sw_active = std::make_shared<SwActive>(shared_from_this());
     std::shared_ptr<SwNew> _sw_new = std::make_shared<SwNew>(shared_from_this());
     std::shared_ptr<SwKeyBindings> _sw_key_bindings = std::make_shared<SwKeyBindings>(shared_from_this());
+    std::shared_ptr<SwPreferences> _sw_preferences = std::make_shared<SwPreferences>(shared_from_this());
 
     int c = 0, is_first = 1;
     static int old = 0;
@@ -119,6 +122,10 @@ chooser:
     case KEY_F(4):
         old = c;
         c = _sw_key_bindings->show_window();
+        goto chooser;
+    case KEY_F(5):
+        _sw_preferences->show_window();
+        c = old;
         goto chooser;
     case 'n':
         _sw_new->show_new_window(sw_content);

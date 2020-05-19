@@ -8,7 +8,7 @@
 class SwNew {
 private:
     std::shared_ptr<Launcher> _launcher;
-    // CDK
+
     CDKSCREEN* cdkscreen;
     CDKENTRY* entry_link;
     CDKBUTTON* btn_add;
