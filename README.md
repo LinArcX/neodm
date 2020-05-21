@@ -42,8 +42,11 @@ https://aur.archlinux.org/packages/neodm-git
 </h1>
 
 ## Donate
+- Bitcoin: `13T28Yd37qPtuxwTFPXeG9dWPahwDzWHjy`
+<img src="assets/donate/Bitcoin.png" width="200" align="center" />
+
 - Monero: `48VdRG9BNePEcrUr6Vx6sJeVz6EefGq5e2F5S9YV2eJtd5uAwjJ7Afn6YeVTWsw6XGS6mXueLywEea3fBPztUbre2Lhia7e`
-<img src="assets/donate/monero.png" align="center" />
+<img src="assets/donate/Monero.png" align="center" />
 
 ## License
 ![License](https://img.shields.io/github/license/LinArcX/neodm.svg)
