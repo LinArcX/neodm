@@ -2,6 +2,8 @@
   <img src="https://img.shields.io/github/languages/top/LinArcX/neodm.svg"/>  <img src="https://img.shields.io/github/repo-size/LinArcX/neodm.svg"/>  <img src="https://img.shields.io/github/tag/LinArcX/neodm.svg?colorB=green"/>
 </h4>
 
+[![asciicast](./assets/images/asciinema_nedom.png)](https://asciinema.org/a/dK2lxcmSdjhrX0hpb7btywJxu)
+
 ## Installation
 
 ### Install it from source
