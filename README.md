@@ -31,13 +31,6 @@ And finally, run it:
 
 `./release/neodm`
 
-### Distributions
-#### Void
-`sudo xbps-install -S neodm`
-
-#### Arch
-https://aur.archlinux.org/packages/neodm-git
-
 ## Who's Neo?
 <h1 align="center">
     <img src="assets/images/neo.gif" align="center" width="400"/>
